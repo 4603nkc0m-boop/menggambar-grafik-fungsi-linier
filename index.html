@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPI Matematika: Grafik Fungsi Linier - SMP Negeri 30 Kab. Tebo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon PID -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Pecahan Bertumpuk Bersih Tanpa Garis Miring */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            line-height: 1.05;
+            margin: 0 3px;
+            font-weight: 700;
+        }
+        .frac > span:first-child {
+            border-bottom: 2px solid currentColor;
+            padding: 0 4px 1px 4px;
+            font-size: 0.85em;
+        }
+        .frac > span:last-child {
+            padding: 1px 4px 0 4px;
+            font-size: 0.85em;
+        }
+        /* Kustomisasi Slider Layar Sentuh Besar */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 14px;
+            border-radius: 999px;
+            background: #cbd5e1;
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #0284c7;
+            border: 4px solid #ffffff;
+            box-shadow: 0 3px 8px rgba(2, 132, 199, 0.45);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.18);
+        }
+        /* Animasi halus */
+        .tab-panel {
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- HEADER IDENTITAS PID / PROYEKTOR -->
+    <header class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white shadow-lg border-b-4 border-sky-500 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-sky-500 flex items-center justify-center text-white text-2xl font-extrabold shadow-inner shrink-0">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-2xl font-extrabold tracking-tight leading-tight text-white">
+                        Media Pembelajaran Interaktif: <span class="text-sky-300">Grafik Fungsi Linier</span>
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-300 font-medium mt-0.5">
+                        Matematika Kelas VIII &bull; SMP Negeri 30 Kab. Tebo &bull; Guru: <span class="text-amber-300 font-semibold">Agung Nugroho, S.Pd</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tombol Utilitas Kelas (Suara & Layar Penuh) -->
+            <div class="flex items-center gap-2.5">
+                <button id="btn-speech" onclick="toggleNarration()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-sm sm:text-base flex items-center gap-2 shadow transition">
+                    <i id="icon-speech" class="fa-solid fa-volume-high"></i>
+                    <span id="text-speech">Suara Narasi</span>
+                </button>
+                <button id="btn-fullscreen" onclick="toggleFullscreen()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-sm sm:text-base flex items-center gap-2 shadow transition">
+                    <i id="icon-fs" class="fa-solid fa-expand"></i>
+                    <span class="hidden sm:inline">Layar Penuh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- NAVIGASI 4 TAB UTAMA (BESAR & RAMAH SENTUHAN) -->
+        <nav class="bg-slate-800/95 border-t border-slate-700">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn active px-4 py-3 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition bg-sky-500 text-white shadow-md">
+                    <i class="fa-solid fa-motorcycle text-lg"></i>
+                    <span>1. Apersepsi &amp; Tujuan</span>
+                </button>
+                <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn px-4 py-3 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition bg-slate-700/70 text-slate-200 hover:bg-slate-700">
+                    <i class="fa-solid fa-sliders text-lg"></i>
+                    <span>2. Lab Kartesius</span>
+                </button>
+                <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn px-4 py-3 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition bg-slate-700/70 text-slate-200 hover:bg-slate-700">
+                    <i class="fa-solid fa-shoe-prints text-lg"></i>
+                    <span>3. Langkah Menggambar</span>
+                </button>
+                <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn px-4 py-3 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition bg-slate-700/70 text-slate-200 hover:bg-slate-700">
+                    <i class="fa-solid fa-trophy text-lg"></i>
+                    <span>4. Kuis Cepat Kelas</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- AREA KONTEN UTAMA -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5">
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: APERSEPSI & TUJUAN PEMBELAJARAN (ORIENTASI MASALAH) -->
+        <!-- ========================================================= -->
+        <section id="tab-1" class="tab-panel space-y-6">
+            <!-- Kartu Tujuan Pembelajaran -->
+            <div class="bg-white rounded-2xl shadow-sm border-2 border-sky-200 p-5 sm:p-6">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-sky-900 flex items-center gap-2.5">
+                        <span class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center"><i class="fa-solid fa-bullseye"></i></span>
+                        Tujuan Pembelajaran Hari Ini
+                    </h2>
+                    <span class="px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs sm:text-sm font-bold">Model Problem-Based Learning (PBL)</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-xl bg-sky-50/80 border border-sky-200 flex items-start gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-sky-600 text-white font-extrabold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                        <p class="text-base sm:text-lg font-medium text-slate-800">Menentukan pasangan berurutan <span class="font-bold text-sky-800">(x, y)</span> yang memenuhi fungsi linier <span class="font-bold text-sky-800">f(x) = mx + c</span> melalui tabel nilai.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-start gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white font-extrabold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                        <p class="text-base sm:text-lg font-medium text-slate-800">Menggambar grafik fungsi linier pada bidang koordinat Kartesius menggunakan tabel nilai dan titik potong sumbu.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-amber-50/80 border border-amber-200 flex items-start gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-extrabold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                        <p class="text-base sm:text-lg font-medium text-slate-800">Menganalisis pengaruh perubahan nilai gradien (<span class="font-bold text-amber-800">m</span>) dan konstanta (<span class="font-bold text-amber-800">c</span>) terhadap kemiringan dan posisi garis.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Studi Kasus Kontekstual Interaktif: Tarif Ojek Online -->
+            <div class="bg-white rounded-2xl shadow-sm border-2 border-slate-200 p-5 sm:p-6">
+                <div class="mb-4">
+                    <span class="inline-block px-3 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">
+                        Orientasi Masalah Kontekstual
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+                        Simulasi Tarif Ojek Online di Kabupaten Tebo
+                    </h2>
+                    <p class="text-base sm:text-lg text-slate-600 mt-1">
+                        Sebuah layanan ojek online menetapkan <strong>biaya awal (buka pintu)</strong> tetap dan <strong>tarif per kilometer</strong>. Geser jarak tempuh di bawah ini untuk melihat pola kenaikan biaya dan titik-titik pada grafik!
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Panel Kontrol Kasus -->
+                    <div class="lg:col-span-5 space-y-5 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <!-- Pengaturan Biaya Awal (c) & Tarif per km (m) -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Biaya Awal (c)</label>
+                                <select id="apersepsi-c" onchange="updateApersepsi()" class="mt-1 w-full text-base sm:text-lg font-extrabold text-sky-700 bg-sky-50 border border-sky-200 rounded-lg p-2 cursor-pointer">
+                                    <option value="3">Rp 3.000 (c = 3)</option>
+                                    <option value="5" selected>Rp 5.000 (c = 5)</option>
+                                    <option value="6">Rp 6.000 (c = 6)</option>
+                                </select>
+                            </div>
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-500 uppercase">Tarif per km (m)</label>
+                                <select id="apersepsi-m" onchange="updateApersepsi()" class="mt-1 w-full text-base sm:text-lg font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-2 cursor-pointer">
+                                    <option value="2">Rp 2.000 (m = 2)</option>
+                                    <option value="3" selected>Rp 3.000 (m = 3)</option>
+                                    <option value="4">Rp 4.000 (m = 4)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Rumus Fungsi Kontekstual -->
+                        <div class="bg-sky-900 text-white p-4 rounded-xl text-center shadow">
+                            <div class="text-xs uppercase tracking-wider text-sky-300 font-semibold">Model Matematika (dalam ribuan rupiah)</div>
+                            <div id="apersepsi-formula" class="text-2xl sm:text-3xl font-extrabold mt-1 tracking-wide">
+                                f(x) = 3x + 5
+                            </div>
+                        </div>
+
+                        <!-- Slider Jarak Tempuh (x km) -->
+                        <div class="bg-white p-4 rounded-xl border-2 border-amber-300 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-base font-bold text-slate-800">Jarak Tempuh (<span class="text-sky-700 font-extrabold">x</span> km):</span>
+                                <span id="apersepsi-x-badge" class="px-3.5 py-1 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xl">3 km</span>
+                            </div>
+                            <input type="range" id="apersepsi-x" min="0" max="6" step="1" value="3" oninput="updateApersepsi()" class="w-full my-2">
+                            <div class="flex justify-between text-xs font-bold text-slate-500 px-1">
+                                <span>0 km</span><span>1 km</span><span>2 km</span><span>3 km</span><span>4 km</span><span>5 km</span><span>6 km</span>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between items-center">
+                                <span class="text-sm font-bold text-slate-600">Total Ongkos (<span class="text-emerald-700">y</span>):</span>
+                                <span id="apersepsi-cost" class="text-2xl font-extrabold text-emerald-700">Rp 14.000</span>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Pasangan Berurutan -->
+                        <div class="overflow-hidden rounded-xl border border-slate-300 bg-white">
+                            <table class="w-full text-center border-collapse">
+                                <thead class="bg-slate-800 text-white text-sm">
+                                    <tr>
+                                        <th class="py-2 px-2">Jarak (x)</th>
+                                        <th class="py-2 px-2">Perhitungan</th>
+                                        <th class="py-2 px-2">Biaya (y)</th>
+                                        <th class="py-2 px-2">Titik (x, y)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="apersepsi-table-body" class="text-sm sm:text-base font-semibold divide-y divide-slate-200">
+                                    <!-- Diisi JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Kanvas Grafik Kontekstual -->
+                    <div class="lg:col-span-7 bg-white p-4 rounded-2xl border-2 border-slate-200 shadow-inner flex flex-col">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm sm:text-base font-bold text-slate-700"><i class="fa-solid fa-eye text-sky-600 mr-1.5"></i>Visualisasi Titik &amp; Garis Tarif Ojek</span>
+                            <label class="inline-flex items-center gap-2 cursor-pointer bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-300">
+                                <input type="checkbox" id="apersepsi-show-line" checked onchange="updateApersepsi()" class="w-5 h-5 accent-sky-600 rounded cursor-pointer">
+                                <span class="text-sm font-bold text-slate-800">Hubungkan Titik Jadi Garis</span>
+                            </label>
+                        </div>
+                        <div class="relative w-full aspect-[4/3] bg-slate-50 rounded-xl border border-slate-300 overflow-hidden">
+                            <canvas id="canvas-apersepsi" class="w-full h-full block"></canvas>
+                        </div>
+                        <p class="mt-3 text-sm sm:text-base text-slate-700 bg-amber-50 border border-amber-200 rounded-xl p-3 font-medium">
+                            <i class="fa-solid fa-lightbulb text-amber-500 mr-1.5"></i><strong>Pertanyaan Pemantik Diskusi:</strong> Mengapa saat jarak <strong>0 km</strong> biayanya tidak Rp 0? Di mana titik tersebut terletak pada grafik?
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: EKSPLORASI GRAFIK INTERAKTIF (LAB KARTESIUS)       -->
+        <!-- ========================================================= -->
+        <section id="tab-2" class="tab-panel hidden space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                <!-- KOLOM KIRI: KANVAS KARTESIUS BESAR (-10 s.d. 10) -->
+                <div class="lg:col-span-7 bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-lg bg-sky-100 text-sky-900 font-extrabold text-sm">Bidang Kartesius (-10 s.d. 10)</span>
+                            <span id="lab-slope-badge" class="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-bold text-sm">
+                                <i class="fa-solid fa-arrow-trend-up mr-1"></i>Garis Naik ke Kanan (m &gt; 0)
+                            </span>
+                        </div>
+                        <button onclick="resetLab()" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm transition">
+                            <i class="fa-solid fa-rotate-left mr-1"></i>Reset
+                        </button>
+                    </div>
+
+                    <!-- Banner Mode Tantangan Kelas (Muncul saat aktif) -->
+                    <div id="challenge-banner" class="hidden mb-3 p-3.5 rounded-xl bg-amber-100 border-2 border-amber-400 text-amber-950 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <div class="font-extrabold text-base flex items-center gap-2">
+                                <i class="fa-solid fa-hand-pointer text-amber-700"></i>
+                                <span>MODE TANTANGAN KELAS AKTIF!</span>
+                            </div>
+                            <p id="challenge-instruction" class="text-sm font-semibold mt-0.5">
+                                Garis disembunyikan! Sentuh papan untuk menempatkan minimal 2 titik yang memenuhi persamaan, lalu tekan "Cek Jawaban".
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="clearStudentPoints()" class="px-3 py-2 rounded-lg bg-white border border-amber-400 font-bold text-sm hover:bg-amber-50">Hapus Titik</button>
+                            <button onclick="checkChallenge()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-extrabold text-sm hover:bg-emerald-500 shadow">Cek Jawaban</button>
+                        </div>
+                    </div>
+
+                    <!-- Kanvas Interaktif -->
+                    <div class="relative w-full aspect-square max-h-[620px] mx-auto bg-white rounded-xl border-2 border-slate-300 overflow-hidden shadow-inner">
+                        <canvas id="canvas-lab" class="w-full h-full block cursor-crosshair"></canvas>
+                    </div>
+
+                    <!-- Legenda Titik Penting -->
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 rounded-full bg-rose-600 inline-block border-2 border-white shadow"></span>
+                            <span>Titik Potong Sumbu-Y: <strong id="legend-y-int" class="text-rose-700">(0, 3)</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 rounded-full bg-amber-500 inline-block border-2 border-white shadow"></span>
+                            <span>Titik Potong Sumbu-X: <strong id="legend-x-int" class="text-amber-700">(-1,5 , 0)</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 rounded-full bg-sky-600 inline-block border-2 border-white shadow"></span>
+                            <span>Titik Bantu Bilangan Bulat</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN: PANEL KONTROL TOUCHSCREEN & TABEL -->
+                <div class="lg:col-span-5 space-y-4">
+                    <!-- Tampilan Persamaan Aktif Besar -->
+                    <div class="bg-gradient-to-br from-sky-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border-2 border-sky-500 text-center">
+                        <div class="text-xs sm:text-sm uppercase tracking-widest text-sky-300 font-bold">Persamaan Fungsi Linier Aktif</div>
+                        <div id="lab-equation-display" class="text-3xl sm:text-4xl font-extrabold mt-2 tracking-wide flex items-center justify-center min-h-[52px]">
+                            f(x) = 2x + 3
+                        </div>
+                        <div id="lab-y-equation-display" class="text-base sm:text-lg text-slate-300 font-semibold mt-1">
+                            atau y = 2x + 3
+                        </div>
+                    </div>
+
+                    <!-- Kontrol Gradien (m) -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border-2 border-slate-200 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-base sm:text-lg font-extrabold text-slate-800">
+                                Gradien / Kemiringan (<span class="text-sky-600">m</span>)
+                            </label>
+                            <div id="lab-m-badge" class="px-3.5 py-1 rounded-xl bg-sky-100 text-sky-900 font-extrabold text-lg sm:text-xl min-w-[72px] text-center">
+                                2
+                            </div>
+                        </div>
+
+                        <!-- Tombol Stepper Besar + dan - -->
+                        <div class="flex items-center gap-3">
+                            <button onclick="adjustM(-1)" class="w-14 h-12 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-900 font-extrabold text-2xl flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <input type="range" id="lab-m-slider" min="-5" max="5" step="0.5" value="2" oninput="onLabSliderChange()" class="w-full">
+                            <button onclick="adjustM(1)" class="w-14 h-12 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-extrabold text-2xl flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- Pilihan Cepat Gradien Pecahan Bertumpuk -->
+                        <div>
+                            <div class="text-xs font-bold text-slate-500 uppercase mb-1.5">Pilihan Cepat Gradien Pecahan:</div>
+                            <div class="grid grid-cols-4 gap-2">
+                                <button onclick="setM(-1.5)" class="py-2 px-2 rounded-xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 font-bold text-slate-800 flex items-center justify-center">
+                                    -<span class="frac"><span>3</span><span>2</span></span>
+                                </button>
+                                <button onclick="setM(-0.5)" class="py-2 px-2 rounded-xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 font-bold text-slate-800 flex items-center justify-center">
+                                    -<span class="frac"><span>1</span><span>2</span></span>
+                                </button>
+                                <button onclick="setM(0.5)" class="py-2 px-2 rounded-xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 font-bold text-slate-800 flex items-center justify-center">
+                                    <span class="frac"><span>1</span><span>2</span></span>
+                                </button>
+                                <button onclick="setM(1.5)" class="py-2 px-2 rounded-xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 font-bold text-slate-800 flex items-center justify-center">
+                                    <span class="frac"><span>3</span><span>2</span></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kontrol Konstanta (c) -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border-2 border-slate-200 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-base sm:text-lg font-extrabold text-slate-800">
+                                Konstanta / Potong Sumbu-Y (<span class="text-rose-600">c</span>)
+                            </label>
+                            <div id="lab-c-badge" class="px-3.5 py-1 rounded-xl bg-rose-100 text-rose-900 font-extrabold text-lg sm:text-xl min-w-[72px] text-center">
+                                3
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <button onclick="adjustC(-1)" class="w-14 h-12 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-900 font-extrabold text-2xl flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <input type="range" id="lab-c-slider" min="-8" max="8" step="1" value="3" oninput="onLabSliderChange()" class="w-full">
+                            <button onclick="adjustC(1)" class="w-14 h-12 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold text-2xl flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Mode Tantangan Kelas -->
+                    <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-300 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-extrabold text-amber-950 text-base">Mode Tantangan Kelas</div>
+                            <div class="text-xs sm:text-sm text-amber-800 font-medium">Sembunyikan garis &amp; minta siswa menaruh titik di papan.</div>
+                        </div>
+                        <button id="btn-toggle-challenge" onclick="toggleChallengeMode()" class="px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-extrabold text-sm sm:text-base shadow shrink-0">
+                            <i class="fa-solid fa-eye-slash mr-1.5"></i>Aktifkan
+                        </button>
+                    </div>
+
+                    <!-- Tabel Nilai Otomatis -->
+                    <div class="bg-white rounded-2xl shadow-sm border-2 border-slate-200 overflow-hidden">
+                        <div class="bg-slate-800 text-white px-4 py-2.5 font-bold text-sm sm:text-base flex justify-between items-center">
+                            <span>Tabel Pasangan Nilai (x, y)</span>
+                            <span class="text-xs text-sky-300">Otomatis</span>
+                        </div>
+                        <table class="w-full text-center border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 text-sm font-bold border-b border-slate-300">
+                                <tr>
+                                    <th class="py-2">x</th>
+                                    <th class="py-2">-2</th>
+                                    <th class="py-2">-1</th>
+                                    <th class="py-2">0</th>
+                                    <th class="py-2">1</th>
+                                    <th class="py-2">2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lab-table-body" class="text-sm sm:text-base font-bold divide-y divide-slate-200">
+                                <!-- Diisi JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: LANGKAH MENGGAMBAR GRAFIK (SIMULASI BERTAHAP)      -->
+        <!-- ========================================================= -->
+        <section id="tab-3" class="tab-panel hidden space-y-5">
+            <div class="bg-white rounded-2xl shadow-sm border-2 border-slate-200 p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
+                    <div>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-sky-600">Simulasi Terbimbing di Depan Kelas</span>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Langkah-Langkah Menggambar Grafik Fungsi Linier</h2>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <span id="step-problem-counter" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-bold text-sm border border-slate-300">
+                            Variasi Soal 1 dari 22
+                        </span>
+                        <button onclick="nextStepProblem()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-extrabold text-sm sm:text-base shadow flex items-center gap-2">
+                            <i class="fa-solid fa-shuffle"></i>
+                            <span>Soal Acak Baru</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5 items-start">
+                    <!-- Panel 4 Tahapan -->
+                    <div class="lg:col-span-6 space-y-4">
+                        <!-- Soal Aktif -->
+                        <div class="p-4 rounded-2xl bg-slate-900 text-white text-center shadow">
+                            <div class="text-xs uppercase tracking-wider text-sky-300 font-bold">Gambarlah Grafik Fungsi Linier Berikut:</div>
+                            <div id="step-equation-title" class="text-3xl sm:text-4xl font-extrabold mt-1 text-amber-300">
+                                f(x) = 2x - 4
+                            </div>
+                        </div>
+
+                        <!-- Kartu Step 1 s.d. Step 4 -->
+                        <div class="space-y-3" id="steps-container">
+                            <!-- Step 1 -->
+                            <div id="step-card-1" class="p-4 rounded-xl border-2 border-sky-500 bg-sky-50 transition">
+                                <div class="flex items-center gap-2.5 font-extrabold text-sky-900 text-base sm:text-lg">
+                                    <span class="w-7 h-7 rounded-full bg-sky-600 text-white text-sm flex items-center justify-center">1</span>
+                                    <span>Tentukan Titik Potong Sumbu-Y (saat x = 0)</span>
+                                </div>
+                                <div id="step-detail-1" class="mt-2 pl-9 text-sm sm:text-base text-slate-800 font-medium">
+                                    <!-- Diisi JS -->
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div id="step-card-2" class="p-4 rounded-xl border-2 border-slate-200 bg-slate-50 opacity-50 transition">
+                                <div class="flex items-center gap-2.5 font-extrabold text-slate-900 text-base sm:text-lg">
+                                    <span class="w-7 h-7 rounded-full bg-slate-600 text-white text-sm flex items-center justify-center">2</span>
+                                    <span>Tentukan Titik Potong Sumbu-X (saat y = 0) atau Titik Bantu</span>
+                                </div>
+                                <div id="step-detail-2" class="mt-2 pl-9 text-sm sm:text-base text-slate-800 font-medium hidden">
+                                    <!-- Diisi JS -->
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div id="step-card-3" class="p-4 rounded-xl border-2 border-slate-200 bg-slate-50 opacity-50 transition">
+                                <div class="flex items-center gap-2.5 font-extrabold text-slate-900 text-base sm:text-lg">
+                                    <span class="w-7 h-7 rounded-full bg-slate-600 text-white text-sm flex items-center justify-center">3</span>
+                                    <span>Plot Kedua Titik pada Bidang Kartesius</span>
+                                </div>
+                                <div id="step-detail-3" class="mt-2 pl-9 text-sm sm:text-base text-slate-800 font-medium hidden">
+                                    <!-- Diisi JS -->
+                                </div>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div id="step-card-4" class="p-4 rounded-xl border-2 border-slate-200 bg-slate-50 opacity-50 transition">
+                                <div class="flex items-center gap-2.5 font-extrabold text-slate-900 text-base sm:text-lg">
+                                    <span class="w-7 h-7 rounded-full bg-slate-600 text-white text-sm flex items-center justify-center">4</span>
+                                    <span>Hubungkan Kedua Titik Menjadi Garis Lurus</span>
+                                </div>
+                                <div id="step-detail-4" class="mt-2 pl-9 text-sm sm:text-base text-slate-800 font-medium hidden">
+                                    <!-- Diisi JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kontrol Navigasi Langkah -->
+                        <div class="flex items-center justify-between gap-3 pt-2">
+                            <button id="btn-prev-step" onclick="changeStep(-1)" disabled class="px-5 py-3.5 rounded-xl bg-slate-200 disabled:opacity-40 hover:bg-slate-300 text-slate-900 font-extrabold text-base flex items-center gap-2 transition">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                <span>Sebelumnya</span>
+                            </button>
+                            <button id="btn-next-step" onclick="changeStep(1)" class="flex-1 px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-base sm:text-lg shadow-md flex items-center justify-center gap-2 transition">
+                                <span id="btn-next-step-text">Langkah Selanjutnya (Tahap 2)</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Kanvas Visualisasi Bertahap -->
+                    <div class="lg:col-span-6 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-slate-700 text-sm sm:text-base">Papan Gambar Simulasi</span>
+                            <span id="step-badge-status" class="px-3 py-1 rounded-full bg-sky-100 text-sky-900 font-extrabold text-xs sm:text-sm">Tahap 1 dari 4</span>
+                        </div>
+                        <div class="relative w-full aspect-square max-h-[540px] mx-auto bg-white rounded-xl border-2 border-slate-300 overflow-hidden shadow-inner">
+                            <canvas id="canvas-step" class="w-full h-full block"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: KUIS CEPAT KELAS (GAME INTERAKTIF 10 SOAL ACAK)    -->
+        <!-- ========================================================= -->
+        <section id="tab-4" class="tab-panel hidden space-y-5">
+            <!-- Header Skor & Progres Kuis -->
+            <div class="bg-white rounded-2xl shadow-sm border-2 border-slate-200 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl font-extrabold">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Kuis Cepat Kelas: Grafik Fungsi Linier</h2>
+                        <p class="text-sm text-slate-600 font-medium">10 Soal Acak dari Bank Soal (26 Variasi) &bull; Diskusi Bersama di Depan Kelas</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="px-4 py-2 rounded-xl bg-sky-50 border border-sky-200 text-center">
+                        <div class="text-xs font-bold text-sky-700 uppercase">Nomor Soal</div>
+                        <div id="quiz-progress" class="text-xl font-extrabold text-sky-950">1 / 10</div>
+                    </div>
+                    <div class="px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+                        <div class="text-xs font-bold text-emerald-700 uppercase">Skor Kelas</div>
+                        <div id="quiz-score" class="text-xl font-extrabold text-emerald-800">0</div>
+                    </div>
+                    <button onclick="startNewQuiz()" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm sm:text-base shadow">
+                        <i class="fa-solid fa-rotate-right mr-1.5"></i>Ulangi Kuis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Area Soal Aktif -->
+            <div id="quiz-active-container" class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                <!-- Kolom Grafik Soal (Muncul jika soal bergambar) -->
+                <div id="quiz-canvas-wrapper" class="lg:col-span-5 bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200">
+                    <div class="text-sm font-bold text-slate-600 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-image text-sky-600"></i>
+                        <span>Perhatikan Grafik Fungsi Linier Berikut:</span>
+                    </div>
+                    <div class="relative w-full aspect-square max-h-[420px] mx-auto bg-white rounded-xl border-2 border-slate-300 overflow-hidden">
+                        <canvas id="canvas-quiz" class="w-full h-full block"></canvas>
+                    </div>
+                </div>
+
+                <!-- Kolom Pertanyaan & Pilihan Jawaban Besar -->
+                <div id="quiz-question-wrapper" class="lg:col-span-7 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border-2 border-slate-200 space-y-5">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <span id="quiz-category-badge" class="inline-block px-2.5 py-1 rounded-md bg-sky-100 text-sky-800 font-bold text-xs uppercase mb-2">
+                            Membaca Grafik
+                        </span>
+                        <h3 id="quiz-question-text" class="text-lg sm:text-2xl font-extrabold text-slate-900 leading-snug">
+                            Memuat soal...
+                        </h3>
+                    </div>
+
+                    <!-- 4 Pilihan Jawaban Touch-Friendly -->
+                    <div id="quiz-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <!-- Diisi JS -->
+                    </div>
+
+                    <!-- Kotak Pembahasan Singkat (Muncul setelah dijawab) -->
+                    <div id="quiz-feedback-box" class="hidden p-4 rounded-xl border-2 space-y-3">
+                        <div id="quiz-feedback-header" class="text-lg sm:text-xl font-extrabold flex items-center gap-2">
+                            <!-- Benar / Salah -->
+                        </div>
+                        <p id="quiz-explanation-text" class="text-base sm:text-lg text-slate-800 font-medium leading-relaxed">
+                            <!-- Pembahasan -->
+                        </p>
+                        <div class="pt-1 flex justify-end">
+                            <button onclick="nextQuizQuestion()" class="px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-base shadow flex items-center gap-2">
+                                <span id="btn-quiz-next-label">Soal Berikutnya</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layar Hasil Akhir Kuis -->
+            <div id="quiz-result-screen" class="hidden bg-white rounded-2xl shadow-md border-2 border-sky-300 p-8 text-center max-w-2xl mx-auto space-y-5">
+                <div class="w-20 h-20 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center text-4xl mx-auto shadow-inner">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Kuis Cepat Kelas Selesai!</h3>
+                <p class="text-base sm:text-lg text-slate-600">Hasil evaluasi pemahaman kelas pada materi <strong>Grafik Fungsi Linier</strong>:</p>
+                <div class="p-6 rounded-2xl bg-sky-50 border-2 border-sky-200 inline-block min-w-[240px]">
+                    <div class="text-sm font-bold text-sky-700 uppercase">Skor Akhir</div>
+                    <div id="quiz-final-score" class="text-5xl font-extrabold text-sky-900 mt-1">80</div>
+                    <div id="quiz-final-summary" class="text-sm font-bold text-slate-600 mt-2">8 dari 10 soal terjawab benar</div>
+                </div>
+                <div>
+                    <button onclick="startNewQuiz()" class="px-8 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-lg shadow-lg transition">
+                        <i class="fa-solid fa-play mr-2"></i>Mainkan Sesi Soal Acak Baru
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- KOTAK NOTIFIKASI / PESAN APLIKASI (PENGGANTI ALERT) -->
+    <div id="toast-message" class="fixed bottom-5 right-5 z-50 hidden max-w-md bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border-2 border-sky-400 flex items-center gap-3.5 transition-all">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-2xl text-sky-400"></i>
+        <div id="toast-text" class="text-sm sm:text-base font-bold leading-snug">Pesan</div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           UTILITAS UMUM: FORMAT PECAHAN HTML, NOTIFIKASI, FULLSCREEN, NARASI
+           ===================================================================== */
+        let currentTab = 1;
+        let isSpeaking = false;
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+            const text = document.getElementById('toast-text');
+            text.innerHTML = msg;
+            toast.classList.remove('hidden', 'border-sky-400', 'border-emerald-400', 'border-amber-400', 'border-rose-400');
+            icon.className = 'fa-solid text-2xl';
+            if (type === 'success') {
+                toast.classList.add('border-emerald-400');
+                icon.classList.add('fa-circle-check', 'text-emerald-400');
+            } else if (type === 'warning') {
+                toast.classList.add('border-amber-400');
+                icon.classList.add('fa-triangle-exclamation', 'text-amber-400');
+            } else if (type === 'error') {
+                toast.classList.add('border-rose-400');
+                icon.classList.add('fa-circle-xmark', 'text-rose-400');
+            } else {
+                toast.classList.add('border-sky-400');
+                icon.classList.add('fa-circle-info', 'text-sky-400');
+            }
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => toast.classList.add('hidden'), 4200);
+        }
+
+        // Format angka desimal / pecahan menjadi pecahan bertumpuk HTML tanpa slash
+        function formatNumberHTML(val) {
+            if (Math.abs(val) < 1e-9) return '0';
+            const sign = val < 0 ? '−' : '';
+            const absVal = Math.abs(val);
+            if (Number.isInteger(absVal)) return sign + absVal;
+
+            // Cek pecahan umum (per 2, per 3, per 4, per 5)
+            const denoms = [2, 3, 4, 5];
+            for (let d of denoms) {
+                const n = Math.round(absVal * d);
+                if (Math.abs(absVal - n / d) < 1e-6) {
+                    return `${sign}<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+                }
+            }
+            return sign + absVal.toFixed(1).replace('.', ',');
+        }
+
+        // Format persamaan f(x) = mx + c dalam HTML bersih
+        function formatLinearEquationHTML(m, c, prefix = 'f(x)') {
+            let rhs = '';
+            if (Math.abs(m) < 1e-9) {
+                rhs = `${c}`;
+            } else {
+                let mStr = '';
+                if (m === 1) mStr = '';
+                else if (m === -1) mStr = '−';
+                else mStr = formatNumberHTML(m);
+
+                rhs = `${mStr}x`;
+                if (c > 0) rhs += ` + ${c}`;
+                else if (c < 0) rhs += ` − ${Math.abs(c)}`;
+            }
+            return `${prefix} = ${rhs}`;
+        }
+
+        // Navigasi Tab
+        function switchTab(tabIndex) {
+            currentTab = tabIndex;
+            for (let i = 1; i <= 4; i++) {
+                const panel = document.getElementById(`tab-${i}`);
+                const btn = document.getElementById(`tab-btn-${i}`);
+                if (i === tabIndex) {
+                    panel.classList.remove('hidden');
+                    btn.classList.remove('bg-slate-700/70', 'text-slate-200');
+                    btn.classList.add('bg-sky-500', 'text-white', 'shadow-md');
+                } else {
+                    panel.classList.add('hidden');
+                    btn.classList.add('bg-slate-700/70', 'text-slate-200');
+                    btn.classList.remove('bg-sky-500', 'text-white', 'shadow-md');
+                }
+            }
+            // Gambar ulang kanvas sesuai tab aktif agar ukuran responsif tepat
+            setTimeout(() => {
+                if (tabIndex === 1) updateApersepsi();
+                if (tabIndex === 2) drawLabCanvas();
+                if (tabIndex === 3) drawStepCanvas();
+                if (tabIndex === 4) drawQuizCanvas();
+            }, 30);
+        }
+
+        // Mode Layar Penuh (Fullscreen)
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {
+                    showToast('Browser membatasi mode layar penuh otomatis. Tekan F11 pada keyboard.', 'warning');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.getElementById('icon-fs');
+            if (document.fullscreenElement) {
+                icon.className = 'fa-solid fa-compress';
+            } else {
+                icon.className = 'fa-solid fa-expand';
+            }
+            setTimeout(() => {
+                updateApersepsi();
+                drawLabCanvas();
+                drawStepCanvas();
+                drawQuizCanvas();
+            }, 100);
+        });
+
+        // Suara Narasi Bahasa Indonesia (Web Speech API)
+        function toggleNarration() {
+            if (!('speechSynthesis' in window)) {
+                showToast('Perangkat ini tidak mendukung fitur suara narasi otomatis.', 'warning');
+                return;
+            }
+            const btn = document.getElementById('btn-speech');
+            const txt = document.getElementById('text-speech');
+            const icon = document.getElementById('icon-speech');
+
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                txt.textContent = 'Suara Narasi';
+                icon.className = 'fa-solid fa-volume-high';
+                btn.classList.remove('bg-rose-500', 'text-white');
+                btn.classList.add('bg-amber-500', 'text-slate-950');
+                return;
+            }
+
+            let narrationText = '';
+            if (currentTab === 1) {
+                narrationText = 'Selamat datang di pembelajaran matematika kelas delapan tentang Grafik Fungsi Linier bersama Bapak Agung Nugroho dari SMP Negeri 30 Kabupaten Tebo. Tujuan pembelajaran hari ini adalah menentukan pasangan berurutan x dan y, menggambar grafik fungsi linier pada bidang Kartesius, serta menganalisis pengaruh gradien m dan konstanta c. Silakan geser jarak tempuh ojek online untuk mengamati hubungan jarak dan biaya.';
+            } else if (currentTab === 2) {
+                narrationText = 'Ini adalah Laboratorium Kartesius Interaktif. Ubah nilai gradien m dan konstanta c untuk mengamati perubahan kemiringan garis dan titik potong sumbu Y. Guru juga dapat mengaktifkan Mode Tantangan Kelas agar siswa maju menaruh titik pada papan.';
+            } else if (currentTab === 3) {
+                narrationText = 'Mari berlatih menggambar grafik fungsi linier secara bertahap. Langkah pertama tentukan titik potong sumbu Y saat x sama dengan nol. Langkah kedua tentukan titik potong sumbu X. Langkah ketiga plot kedua titik pada koordinat, lalu hubungkan menjadi garis lurus.';
+            } else {
+                narrationText = 'Waktunya Kuis Cepat Kelas! Pilih jawaban yang paling tepat berdasarkan grafik atau persamaan fungsi linier yang tampil di layar, lalu diskusikan pembahasannya bersama.';
+            }
+
+            const utterance = new SpeechSynthesisUtterance(narrationText);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.96;
+            utterance.onend = () => {
+                isSpeaking = false;
+                txt.textContent = 'Suara Narasi';
+                icon.className = 'fa-solid fa-volume-high';
+                btn.classList.remove('bg-rose-500', 'text-white');
+                btn.classList.add('bg-amber-500', 'text-slate-950');
+            };
+
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+            isSpeaking = true;
+            txt.textContent = 'Hentikan Suara';
+            icon.className = 'fa-solid fa-stop';
+            btn.classList.remove('bg-amber-500', 'text-slate-950');
+            btn.classList.add('bg-rose-500', 'text-white');
+        }
+
+        /* =====================================================================
+           HELPER MENGGAMBAR BIDANG KARTESIUS PADA HTML5 CANVAS (TAJAM / RETINA)
+           ===================================================================== */
+        function setupHiDPICanvas(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            if (rect.width === 0 || rect.height === 0) return null;
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.height * dpr);
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            return { ctx, width: rect.width, height: rect.height };
+        }
+
+        function drawCartesianGrid(ctx, width, height, xMin, xMax, yMin, yMax, options = {}) {
+            const pad = options.pad || 38;
+            const plotW = width - pad * 2;
+            const plotH = height - pad * 2;
+            const xRange = xMax - xMin;
+            const yRange = yMax - yMin;
+
+            const toPxX = (x) => pad + ((x - xMin) / xRange) * plotW;
+            const toPxY = (y) => pad + ((yMax - y) / yRange) * plotH;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            // Garis Grid Minor & Mayor
+            ctx.lineWidth = 1;
+            for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+                const px = toPxX(x);
+                ctx.strokeStyle = (x % 5 === 0) ? '#cbd5e1' : '#e2e8f0';
+                ctx.beginPath();
+                ctx.moveTo(px, pad);
+                ctx.lineTo(px, height - pad);
+                ctx.stroke();
+            }
+            for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+                const py = toPxY(y);
+                ctx.strokeStyle = (y % 5 === 0) ? '#cbd5e1' : '#e2e8f0';
+                ctx.beginPath();
+                ctx.moveTo(pad, py);
+                ctx.lineTo(width - pad, py);
+                ctx.stroke();
+            }
+
+            // Sumbu X dan Sumbu Y Tebal
+            const originX = toPxX(0);
+            const originY = toPxY(0);
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2.5;
+
+            if (yMin <= 0 && yMax >= 0) {
+                ctx.beginPath();
+                ctx.moveTo(pad - 6, originY);
+                ctx.lineTo(width - pad + 10, originY);
+                ctx.stroke();
+                // Panah Sumbu X
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.moveTo(width - pad + 14, originY);
+                ctx.lineTo(width - pad + 5, originY - 5);
+                ctx.lineTo(width - pad + 5, originY + 5);
+                ctx.fill();
+            }
+
+            if (xMin <= 0 && xMax >= 0) {
+                ctx.beginPath();
+                ctx.moveTo(originX, height - pad + 6);
+                ctx.lineTo(originX, pad - 10);
+                ctx.stroke();
+                // Panah Sumbu Y
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.moveTo(originX, pad - 14);
+                ctx.lineTo(originX - 5, pad - 5);
+                ctx.lineTo(originX + 5, pad - 5);
+                ctx.fill();
+            }
+
+            // Label Angka Sumbu
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const xStep = options.xStep || 1;
+            for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x += xStep) {
+                if (x === 0 && xMin < 0) continue;
+                const px = toPxX(x);
+                const labelY = (yMin <= 0 && yMax >= 0) ? originY + 6 : height - pad + 6;
+                ctx.fillText(x.toString(), px, labelY);
+            }
+
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            const yStep = options.yStep || 1;
+            for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y += yStep) {
+                if (y === 0) continue;
+                const py = toPxY(y);
+                const labelX = (xMin <= 0 && xMax >= 0) ? originX - 7 : pad - 7;
+                ctx.fillText(y.toString(), labelX, py);
+            }
+
+            // Label Nama Sumbu X dan Y
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'extrabold 14px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(options.xLabel || 'X', width - pad + 16, (yMin <= 0 && yMax >= 0) ? originY - 6 : height - pad);
+            ctx.textAlign = 'center';
+            ctx.fillText(options.yLabel || 'Y', (xMin <= 0 && xMax >= 0) ? originX : pad, pad - 24);
+
+            return { toPxX, toPxY, pad, plotW, plotH };
+        }
+
+        function drawClippedLine(ctx, mapper, m, c, xMin, xMax, yMin, yMax, color = '#0284c7', lineWidth = 4) {
+            const { toPxX, toPxY, pad, plotW, plotH } = mapper;
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(pad, pad, plotW, plotH);
+            ctx.clip();
+
+            const x1 = xMin - 1;
+            const y1 = m * x1 + c;
+            const x2 = xMax + 1;
+            const y2 = m * x2 + c;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(toPxX(x1), toPxY(y1));
+            ctx.lineTo(toPxX(x2), toPxY(y2));
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawPointMarker(ctx, mapper, x, y, color, radius = 7, label = '') {
+            const px = mapper.toPxX(x);
+            const py = mapper.toPxY(y);
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(px, py, radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            if (label) {
+                ctx.font = 'bold 13px Inter, sans-serif';
+                const textW = ctx.measureText(label).width;
+                const boxX = px + 10;
+                const boxY = py - 24;
+                ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.roundRect(boxX - 4, boxY - 2, textW + 8, 20, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(label, boxX, boxY + 1);
+            }
+            ctx.restore();
+        }
+
+        /* =====================================================================
+           TAB 1: LOGIKA APERSEPSI TARIF OJEK ONLINE
+           ===================================================================== */
+        function updateApersepsi() {
+            const c = parseInt(document.getElementById('apersepsi-c').value, 10);
+            const m = parseInt(document.getElementById('apersepsi-m').value, 10);
+            const activeX = parseInt(document.getElementById('apersepsi-x').value, 10);
+            const showLine = document.getElementById('apersepsi-show-line').checked;
+
+            const activeY = m * activeX + c;
+            document.getElementById('apersepsi-formula').textContent = `f(x) = ${m}x + ${c}`;
+            document.getElementById('apersepsi-x-badge').textContent = `${activeX} km`;
+            document.getElementById('apersepsi-cost').textContent = `Rp ${(activeY * 1000).toLocaleString('id-ID')}`;
+
+            // Perbarui Tabel
+            const tbody = document.getElementById('apersepsi-table-body');
+            tbody.innerHTML = '';
+            for (let x = 0; x <= 6; x++) {
+                const y = m * x + c;
+                const isSelected = x === activeX;
+                const tr = document.createElement('tr');
+                tr.className = isSelected ? 'bg-amber-100 text-amber-950 font-extrabold' : 'hover:bg-slate-50 text-slate-700';
+                tr.innerHTML = `
+                    <td class="py-2 px-2">${x} km</td>
+                    <td class="py-2 px-2">${m}(${x}) + ${c}</td>
+                    <td class="py-2 px-2 text-emerald-700">Rp ${(y * 1000).toLocaleString('id-ID')}</td>
+                    <td class="py-2 px-2 font-bold text-sky-800">(${x}, ${y})</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            // Gambar Kanvas Apersepsi
+            const canvas = document.getElementById('canvas-apersepsi');
+            const setup = setupHiDPICanvas(canvas);
+            if (!setup) return;
+            const { ctx, width, height } = setup;
+
+            const yMax = 32;
+            const mapper = drawCartesianGrid(ctx, width, height, 0, 7, 0, yMax, {
+                pad: 44,
+                xStep: 1,
+                yStep: 5,
+                xLabel: 'Jarak (km)',
+                yLabel: 'Biaya (ribu Rp)'
+            });
+
+            if (showLine) {
+                drawClippedLine(ctx, mapper, m, c, 0, 7, 0, yMax, '#0284c7', 3.5);
+            }
+
+            // Gambar garis bantu putus-putus untuk titik aktif
+            const pxAct = mapper.toPxX(activeX);
+            const pyAct = mapper.toPxY(activeY);
+            ctx.save();
+            ctx.setLineDash([6, 5]);
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pxAct, mapper.toPxY(0));
+            ctx.lineTo(pxAct, pyAct);
+            ctx.lineTo(mapper.toPxX(0), pyAct);
+            ctx.stroke();
+            ctx.restore();
+
+            // Gambar semua titik 0..6
+            for (let x = 0; x <= 6; x++) {
+                const y = m * x + c;
+                if (x === activeX) {
+                    drawPointMarker(ctx, mapper, x, y, '#f59e0b', 9, `(${x}, ${y}) → Rp ${y}.000`);
+                } else {
+                    drawPointMarker(ctx, mapper, x, y, x === 0 ? '#e11d48' : '#0284c7', 6, `(${x}, ${y})`);
+                }
+            }
+        }
+
+        /* =====================================================================
+           TAB 2: LABORATORIUM KARTESIUS INTERAKTIF (-10 s.d. 10) & TANTANGAN
+           ===================================================================== */
+        let labState = {
+            m: 2,
+            c: 3,
+            challengeMode: false,
+            studentPoints: [],
+            revealAnswer: false
+        };
+
+        function onLabSliderChange() {
+            labState.m = parseFloat(document.getElementById('lab-m-slider').value);
+            labState.c = parseInt(document.getElementById('lab-c-slider').value, 10);
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            updateLabUI();
+        }
+
+        function adjustM(delta) {
+            let next = Math.max(-5, Math.min(5, labState.m + delta));
+            labState.m = next;
+            document.getElementById('lab-m-slider').value = next;
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            updateLabUI();
+        }
+
+        function setM(val) {
+            labState.m = val;
+            document.getElementById('lab-m-slider').value = val;
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            updateLabUI();
+        }
+
+        function adjustC(delta) {
+            let next = Math.max(-8, Math.min(8, labState.c + delta));
+            labState.c = next;
+            document.getElementById('lab-c-slider').value = next;
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            updateLabUI();
+        }
+
+        function resetLab() {
+            labState.m = 2;
+            labState.c = 3;
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            document.getElementById('lab-m-slider').value = 2;
+            document.getElementById('lab-c-slider').value = 3;
+            updateLabUI();
+        }
+
+        function updateLabUI() {
+            const { m, c } = labState;
+            document.getElementById('lab-m-badge').innerHTML = formatNumberHTML(m);
+            document.getElementById('lab-c-badge').textContent = c;
+            document.getElementById('lab-equation-display').innerHTML = formatLinearEquationHTML(m, c, 'f(x)');
+            document.getElementById('lab-y-equation-display').innerHTML = 'atau ' + formatLinearEquationHTML(m, c, 'y');
+
+            // Indikator Sifat Garis
+            const badge = document.getElementById('lab-slope-badge');
+            if (m > 0) {
+                badge.className = 'px-3 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-bold text-sm';
+                badge.innerHTML = '<i class="fa-solid fa-arrow-trend-up mr-1"></i>Garis Naik ke Kanan (m &gt; 0)';
+            } else if (m < 0) {
+                badge.className = 'px-3 py-1 rounded-lg bg-rose-100 text-rose-900 font-bold text-sm';
+                badge.innerHTML = '<i class="fa-solid fa-arrow-trend-down mr-1"></i>Garis Turun ke Kanan (m &lt; 0)';
+            } else {
+                badge.className = 'px-3 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-sm';
+                badge.innerHTML = '<i class="fa-solid fa-arrows-left-right mr-1"></i>Garis Mendatar / Sejajar Sumbu-X (m = 0)';
+            }
+
+            // Titik Potong Sumbu-Y dan Sumbu-X
+            document.getElementById('legend-y-int').textContent = `(0, ${c})`;
+            const xIntEl = document.getElementById('legend-x-int');
+            if (Math.abs(m) < 1e-9) {
+                xIntEl.textContent = (c === 0) ? 'Berimpit Sumbu-X' : 'Tidak Memotong Sumbu-X';
+            } else {
+                const xInt = -c / m;
+                xIntEl.innerHTML = `(${formatNumberHTML(xInt)}, 0)`;
+            }
+
+            // Perbarui Tabel Nilai Otomatis (-2 s.d. 2)
+            const tbody = document.getElementById('lab-table-body');
+            const xs = [-2, -1, 0, 1, 2];
+            let rowY = '<tr class="bg-white"><td class="py-2 bg-slate-100 text-slate-700">y = f(x)</td>';
+            let rowPt = '<tr class="bg-sky-50/60"><td class="py-2 bg-slate-100 text-slate-700">(x, y)</td>';
+            xs.forEach(x => {
+                const y = m * x + c;
+                const yHtml = formatNumberHTML(y);
+                rowY += `<td class="py-2 text-sky-800">${yHtml}</td>`;
+                rowPt += `<td class="py-2 text-xs sm:text-sm text-slate-800">(${x}, ${yHtml})</td>`;
+            });
+            rowY += '</tr>';
+            rowPt += '</tr>';
+            tbody.innerHTML = rowY + rowPt;
+
+            drawLabCanvas();
+        }
+
+        function toggleChallengeMode() {
+            labState.challengeMode = !labState.challengeMode;
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            const banner = document.getElementById('challenge-banner');
+            const btn = document.getElementById('btn-toggle-challenge');
+            if (labState.challengeMode) {
+                banner.classList.remove('hidden');
+                btn.innerHTML = '<i class="fa-solid fa-eye mr-1.5"></i>Matikan';
+                btn.classList.replace('bg-amber-500', 'bg-slate-800');
+                btn.classList.replace('text-slate-950', 'text-white');
+                showToast('Mode Tantangan Kelas Aktif! Minta siswa maju menyentuh titik koordinat pada kanvas.', 'warning');
+            } else {
+                banner.classList.add('hidden');
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash mr-1.5"></i>Aktifkan';
+                btn.classList.replace('bg-slate-800', 'bg-amber-500');
+                btn.classList.replace('text-white', 'text-slate-950');
+            }
+            drawLabCanvas();
+        }
+
+        function clearStudentPoints() {
+            labState.studentPoints = [];
+            labState.revealAnswer = false;
+            drawLabCanvas();
+        }
+
+        function checkChallenge() {
+            if (labState.studentPoints.length < 2) {
+                showToast('Sentuh papan untuk menempatkan minimal 2 titik koordinat terlebih dahulu!', 'warning');
+                return;
+            }
+            let correctCount = 0;
+            labState.studentPoints.forEach(pt => {
+                const expectedY = labState.m * pt.x + labState.c;
+                if (Math.abs(pt.y - expectedY) < 0.01) correctCount++;
+            });
+
+            labState.revealAnswer = true;
+            drawLabCanvas();
+
+            if (correctCount === labState.studentPoints.length) {
+                showToast(`Luar Biasa! Semua (${correctCount}) titik yang ditempatkan tepat berada pada garis!`, 'success');
+            } else {
+                showToast(`Ada ${correctCount} dari ${labState.studentPoints.length} titik yang tepat. Perhatikan garis jawaban yang muncul!`, 'error');
+            }
+        }
+
+        function drawLabCanvas() {
+            const canvas = document.getElementById('canvas-lab');
+            const setup = setupHiDPICanvas(canvas);
+            if (!setup) return;
+            const { ctx, width, height } = setup;
+
+            const mapper = drawCartesianGrid(ctx, width, height, -10, 10, -10, 10, {
+                pad: 34,
+                xStep: 1,
+                yStep: 1,
+                xLabel: 'X',
+                yLabel: 'Y'
+            });
+            window._labMapper = mapper;
+
+            const { m, c, challengeMode, studentPoints, revealAnswer } = labState;
+
+            // Tampilkan garis jika bukan mode tantangan ATAU jawaban sudah dibuka
+            if (!challengeMode || revealAnswer) {
+                drawClippedLine(ctx, mapper, m, c, -10, 10, -10, 10, '#0284c7', 4.5);
+
+                // Titik bantu bilangan bulat
+                for (let x = -10; x <= 10; x++) {
+                    const y = m * x + c;
+                    if (Number.isInteger(y) && y >= -10 && y <= 10 && x !== 0) {
+                        drawPointMarker(ctx, mapper, x, y, '#0284c7', 5.5);
+                    }
+                }
+
+                // Titik potong sumbu-X jika dalam rentang
+                if (Math.abs(m) > 1e-9) {
+                    const xInt = -c / m;
+                    if (xInt >= -10 && xInt <= 10 && Math.abs(xInt) > 1e-9) {
+                        drawPointMarker(ctx, mapper, xInt, 0, '#f59e0b', 8, `(${Number.isInteger(xInt) ? xInt : xInt.toFixed(1).replace('.', ',')}, 0)`);
+                    }
+                }
+
+                // Titik potong sumbu-Y (0, c)
+                if (c >= -10 && c <= 10) {
+                    drawPointMarker(ctx, mapper, 0, c, '#e11d48', 8.5, `(0, ${c})`);
+                }
+            }
+
+            // Jika Mode Tantangan: gambar titik pilihan siswa & garis penghubungnya
+            if (challengeMode && studentPoints.length > 0) {
+                if (studentPoints.length >= 2) {
+                    ctx.save();
+                    ctx.strokeStyle = '#8b5cf6';
+                    ctx.lineWidth = 3.5;
+                    ctx.setLineDash([8, 6]);
+                    ctx.beginPath();
+                    ctx.moveTo(mapper.toPxX(studentPoints[0].x), mapper.toPxY(studentPoints[0].y));
+                    for (let i = 1; i < studentPoints.length; i++) {
+                        ctx.lineTo(mapper.toPxX(studentPoints[i].x), mapper.toPxY(studentPoints[i].y));
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                studentPoints.forEach((pt, idx) => {
+                    const isTrue = Math.abs(pt.y - (m * pt.x + c)) < 0.01;
+                    const color = revealAnswer ? (isTrue ? '#10b981' : '#ef4444') : '#7c3aed';
+                    drawPointMarker(ctx, mapper, pt.x, pt.y, color, 8.5, `P${idx + 1}(${pt.x}, ${pt.y})`);
+                });
+            }
+        }
+
+        // Event Sentuh / Klik Kanvas Lab Kartesius untuk Mode Tantangan
+        document.getElementById('canvas-lab').addEventListener('pointerdown', function(e) {
+            if (!labState.challengeMode || !window._labMapper) return;
+            const rect = this.getBoundingClientRect();
+            const px = e.clientX - rect.left;
+            const py = e.clientY - rect.top;
+
+            const { pad, plotW, plotH } = window._labMapper;
+            const rawX = -10 + ((px - pad) / plotW) * 20;
+            const rawY = 10 - ((py - pad) / plotH) * 20;
+
+            const snapX = Math.round(rawX);
+            const snapY = Math.round(rawY);
+
+            if (snapX >= -10 && snapX <= 10 && snapY >= -10 && snapY <= 10) {
+                // Toggle titik jika sudah ada di koordinat yang sama
+                const existingIdx = labState.studentPoints.findIndex(p => p.x === snapX && p.y === snapY);
+                if (existingIdx >= 0) {
+                    labState.studentPoints.splice(existingIdx, 1);
+                } else {
+                    labState.studentPoints.push({ x: snapX, y: snapY });
+                }
+                labState.revealAnswer = false;
+                drawLabCanvas();
+            }
+        });
+
+        /* =====================================================================
+           TAB 3: LANGKAH MENGGAMBAR GRAFIK (22 VARIASI SOAL BERTAHAP)
+           ===================================================================== */
+        const stepProblemBank = [
+            { m: 2, c: -4 }, { m: -2, c: 6 }, { m: 3, c: -6 }, { m: -3, c: 3 },
+            { m: 1, c: 4 }, { m: -1, c: 5 }, { m: 2, c: 2 }, { m: -2, c: -4 },
+            { m: 4, c: -8 }, { m: -4, c: 4 }, { m: 1, c: -5 }, { m: -1, c: -3 },
+            { m: 0.5, c: -2 }, { m: -0.5, c: 3 }, { m: 0.5, c: 2 }, { m: -0.5, c: -2 },
+            { m: 1.5, c: -3 }, { m: -1.5, c: 3 }, { m: 2, c: -6 }, { m: -2, c: 4 },
+            { m: 3, c: 3 }, { m: -3, c: -6 }
+        ];
+        let stepState = {
+            problemIdx: 0,
+            currentStep: 1
+        };
+
+        function nextStepProblem() {
+            let nextIdx;
+            do {
+                nextIdx = Math.floor(Math.random() * stepProblemBank.length);
+            } while (nextIdx === stepState.problemIdx && stepProblemBank.length > 1);
+            stepState.problemIdx = nextIdx;
+            stepState.currentStep = 1;
+            updateStepUI();
+        }
+
+        function changeStep(delta) {
+            const next = Math.max(1, Math.min(4, stepState.currentStep + delta));
+            stepState.currentStep = next;
+            updateStepUI();
+        }
+
+        function updateStepUI() {
+            const prob = stepProblemBank[stepState.problemIdx];
+            const { m, c } = prob;
+            const xInt = -c / m;
+
+            document.getElementById('step-problem-counter').textContent = `Variasi Soal ${stepState.problemIdx + 1} dari ${stepProblemBank.length}`;
+            document.getElementById('step-equation-title').innerHTML = formatLinearEquationHTML(m, c, 'f(x)');
+            document.getElementById('step-badge-status').textContent = `Tahap ${stepState.currentStep} dari 4`;
+
+            // Isi penjelasan masing-masing langkah
+            document.getElementById('step-detail-1').innerHTML = `
+                Substitusikan <strong>x = 0</strong> ke persamaan:<br>
+                y = ${formatNumberHTML(m)}(0) ${c >= 0 ? '+ ' + c : '− ' + Math.abs(c)} = <strong>${c}</strong>.<br>
+                Diperoleh titik potong sumbu-Y: <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-900 font-extrabold">(0, ${c})</span>
+            `;
+
+            // Jika c = 0, pakai titik bantu x = 2
+            let secondPt = { x: xInt, y: 0 };
+            if (c === 0) {
+                secondPt = { x: 2, y: m * 2 };
+                document.getElementById('step-detail-2').innerHTML = `
+                    Karena garis melalui pusat (0, 0), pilih titik bantu <strong>x = 2</strong>:<br>
+                    y = ${formatNumberHTML(m)}(2) = <strong>${secondPt.y}</strong>.<br>
+                    Diperoleh titik kedua: <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-extrabold">(2, ${secondPt.y})</span>
+                `;
+            } else {
+                document.getElementById('step-detail-2').innerHTML = `
+                    Substitusikan <strong>y = 0</strong> ke persamaan:<br>
+                    0 = ${formatNumberHTML(m)}x ${c >= 0 ? '+ ' + c : '− ' + Math.abs(c)} &rarr; x = <strong>${formatNumberHTML(xInt)}</strong>.<br>
+                    Diperoleh titik potong sumbu-X: <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-extrabold">(${formatNumberHTML(xInt)}, 0)</span>
+                `;
+            }
+
+            document.getElementById('step-detail-3').innerHTML = `
+                Tandai kedua koordinat <strong class="text-rose-700">(0, ${c})</strong> dan <strong class="text-amber-700">(${formatNumberHTML(secondPt.x)}, ${secondPt.y})</strong> pada bidang Kartesius di samping.
+            `;
+
+            document.getElementById('step-detail-4').innerHTML = `
+                Tarik garis lurus yang melewati kedua titik tersebut dan perpanjang kedua ujungnya. Grafik <strong class="text-sky-700">${formatLinearEquationHTML(m, c, 'f(x)')}</strong> selesai digambar!
+            `;
+
+            // Tampilan kartu aktif / terbuka
+            for (let s = 1; s <= 4; s++) {
+                const card = document.getElementById(`step-card-${s}`);
+                const detail = document.getElementById(`step-detail-${s}`);
+                if (s <= stepState.currentStep) {
+                    card.classList.remove('opacity-50', 'border-slate-200', 'bg-slate-50');
+                    card.classList.add(s === stepState.currentStep ? 'border-sky-500' : 'border-emerald-400', s === stepState.currentStep ? 'bg-sky-50' : 'bg-emerald-50/40');
+                    detail.classList.remove('hidden');
+                } else {
+                    card.classList.add('opacity-50', 'border-slate-200', 'bg-slate-50');
+                    card.classList.remove('border-sky-500', 'border-emerald-400', 'bg-sky-50', 'bg-emerald-50/40');
+                    detail.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('btn-prev-step').disabled = (stepState.currentStep === 1);
+            const nextBtn = document.getElementById('btn-next-step');
+            const nextLabel = document.getElementById('btn-next-step-text');
+            if (stepState.currentStep < 4) {
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50');
+                nextLabel.textContent = `Langkah Selanjutnya (Tahap ${stepState.currentStep + 1})`;
+            } else {
+                nextBtn.disabled = true;
+                nextBtn.classList.add('opacity-50');
+                nextLabel.textContent = 'Semua Tahap Selesai!';
+            }
+
+            drawStepCanvas();
+        }
+
+        function drawStepCanvas() {
+            const canvas = document.getElementById('canvas-step');
+            const setup = setupHiDPICanvas(canvas);
+            if (!setup) return;
+            const { ctx, width, height } = setup;
+
+            const mapper = drawCartesianGrid(ctx, width, height, -8, 8, -8, 8, {
+                pad: 34,
+                xStep: 1,
+                yStep: 1
+            });
+
+            const { m, c } = stepProblemBank[stepState.problemIdx];
+            const step = stepState.currentStep;
+            const xInt = -c / m;
+            const secondPt = (c === 0) ? { x: 2, y: m * 2 } : { x: xInt, y: 0 };
+
+            if (step >= 4) {
+                drawClippedLine(ctx, mapper, m, c, -8, 8, -8, 8, '#0284c7', 4.5);
+            }
+            if (step >= 1) {
+                drawPointMarker(ctx, mapper, 0, c, '#e11d48', 8.5, `(0, ${c})`);
+            }
+            if (step >= 2) {
+                drawPointMarker(ctx, mapper, secondPt.x, secondPt.y, '#f59e0b', 8.5, `(${secondPt.x}, ${secondPt.y})`);
+            }
+            if (step === 3) {
+                // Garis bantu putus-putus sebelum ditarik penuh
+                ctx.save();
+                ctx.setLineDash([7, 6]);
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(mapper.toPxX(0), mapper.toPxY(c));
+                ctx.lineTo(mapper.toPxX(secondPt.x), mapper.toPxY(secondPt.y));
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        /* =====================================================================
+           TAB 4: KUIS CEPAT KELAS (26 BANK SOAL -> 10 SOAL ACAK INTERAKTIF)
+           ===================================================================== */
+        const quizQuestionBank = [
+            {
+                category: 'Membaca Grafik',
+                question: 'Perhatikan grafik di samping! Titik potong garis terhadap sumbu-Y adalah ...',
+                graph: { m: 2, c: 4 },
+                options: ['(0, 4)', '(4, 0)', '(0, −2)', '(−2, 0)'],
+                answer: 0,
+                explanation: 'Garis memotong sumbu tegak (sumbu-Y) tepat pada titik (0, 4), yang sesuai dengan nilai konstanta c = 4.'
+            },
+            {
+                category: 'Membaca Grafik',
+                question: 'Berdasarkan grafik di samping, titik potong garis terhadap sumbu-X berada di koordinat ...',
+                graph: { m: 2, c: -6 },
+                options: ['(0, −6)', '(3, 0)', '(−3, 0)', '(0, 3)'],
+                answer: 1,
+                explanation: 'Garis memotong sumbu mendatar (sumbu-X) saat y = 0, yaitu pada koordinat (3, 0).'
+            },
+            {
+                category: 'Menentukan Persamaan Grafik',
+                question: 'Persamaan fungsi linier yang sesuai dengan gambar grafik di samping adalah ...',
+                graph: { m: 1, c: 3 },
+                options: ['f(x) = x + 3', 'f(x) = x − 3', 'f(x) = 3x + 1', 'f(x) = −x + 3'],
+                answer: 0,
+                explanation: 'Garis memotong sumbu-Y di (0, 3) sehingga c = 3, dan memotong sumbu-X di (−3, 0) sehingga gradiennya m = 1. Jadi f(x) = x + 3.'
+            },
+            {
+                category: 'Menentukan Persamaan Grafik',
+                question: 'Manakah persamaan yang tepat untuk grafik garis yang turun ke kanan di samping?',
+                graph: { m: -2, c: 4 },
+                options: ['f(x) = 2x + 4', 'f(x) = −2x + 4', 'f(x) = −2x − 4', 'f(x) = 4x − 2'],
+                answer: 1,
+                explanation: 'Garis memotong sumbu-Y di (0, 4) maka c = 4, dan memotong sumbu-X di (2, 0) dengan arah turun ke kanan (m = −2). Persamaannya f(x) = −2x + 4.'
+            },
+            {
+                category: 'Konsep Gradien',
+                question: 'Perhatikan arah kemiringan garis pada grafik di samping. Nilai gradien (m) dari garis tersebut adalah ...',
+                graph: { m: -1, c: 2 },
+                options: ['m = 1', 'm = −1', 'm = 2', 'm = 0'],
+                answer: 1,
+                explanation: 'Setiap bergeser 1 satuan ke kanan, garis turun 1 satuan ke bawah (dari (0, 2) ke (2, 0)), sehingga m = −1.'
+            },
+            {
+                category: 'Menghitung Nilai Fungsi',
+                question: 'Diketahui fungsi linier f(x) = 3x − 5. Titik koordinat yang dilalui oleh grafik fungsi tersebut adalah ...',
+                graph: null,
+                options: ['(2, 1)', '(2, 6)', '(1, 2)', '(0, 5)'],
+                answer: 0,
+                explanation: 'Untuk x = 2, maka f(2) = 3(2) − 5 = 6 − 5 = 1. Jadi titik (2, 1) dilalui oleh grafik.'
+            },
+            {
+                category: 'Titik Potong Sumbu',
+                question: 'Grafik fungsi linier f(x) = −4x + 8 memotong sumbu-X pada koordinat ...',
+                graph: null,
+                options: ['(0, 8)', '(8, 0)', '(2, 0)', '(−2, 0)'],
+                answer: 2,
+                explanation: 'Syarat memotong sumbu-X adalah y = 0: 0 = −4x + 8 → 4x = 8 → x = 2. Titik potongnya adalah (2, 0).'
+            },
+            {
+                category: 'Titik Potong Sumbu',
+                question: 'Grafik fungsi f(x) = 5x − 7 akan memotong sumbu-Y di titik ...',
+                graph: null,
+                options: ['(0, 5)', '(0, −7)', '(−7, 0)', '(5, −7)'],
+                answer: 1,
+                explanation: 'Titik potong sumbu-Y diperoleh saat x = 0, sehingga f(0) = 5(0) − 7 = −7. Koordinatnya adalah (0, −7).'
+            },
+            {
+                category: 'Sifat Grafik Fungsi Linier',
+                question: 'Jika suatu fungsi linier memiliki rumus f(x) = −3x + 1, bagaimanakah bentuk grafiknya?',
+                graph: null,
+                options: [
+                    'Garis lurus naik dari kiri bawah ke kanan atas',
+                    'Garis lurus turun dari kiri atas ke kanan bawah',
+                    'Garis mendatar sejajar sumbu-X',
+                    'Kurva melengkung terbuka ke atas'
+                ],
+                answer: 1,
+                explanation: 'Karena koefisien x (gradien m = −3) bernilai negatif, maka grafik berupa garis lurus yang turun dari kiri atas ke kanan bawah.'
+            },
+            {
+                category: 'Sifat Grafik Fungsi Linier',
+                question: 'Grafik dari fungsi konstan f(x) = 4 pada bidang koordinat Kartesius berupa ...',
+                graph: { m: 0, c: 4 },
+                options: [
+                    'Garis mendatar melalui (0, 4)',
+                    'Garis tegak melalui (4, 0)',
+                    'Garis miring melalui (0, 0) dan (4, 4)',
+                    'Garis turun memotong (0, 4)'
+                ],
+                answer: 0,
+                explanation: 'Untuk setiap nilai x, nilai y selalu tetap 4. Grafiknya berupa garis mendatar sejajar sumbu-X yang melewati titik (0, 4).'
+            },
+            {
+                category: 'Membaca Grafik',
+                question: 'Perhatikan grafik di samping! Nilai f(2) berdasarkan grafik tersebut adalah ...',
+                graph: { m: 2, c: -1 },
+                options: ['1', '2', '3', '4'],
+                answer: 2,
+                explanation: 'Pada grafik garis f(x) = 2x − 1, saat x = 2 nilai y berada tepat di angka 3, sehingga f(2) = 3.'
+            },
+            {
+                category: 'Menentukan Persamaan Grafik',
+                question: 'Grafik di samping memotong sumbu-Y di (0, −3) dan sumbu-X di (3, 0). Persamaannya adalah ...',
+                graph: { m: 1, c: -3 },
+                options: ['f(x) = x − 3', 'f(x) = x + 3', 'f(x) = −x − 3', 'f(x) = 3x − 3'],
+                answer: 0,
+                explanation: 'Titik potong sumbu-Y adalah (0, −3) sehingga c = −3. Karena melalui (3, 0), maka 0 = 3m − 3 → m = 1. Jadi f(x) = x − 3.'
+            },
+            {
+                category: 'Gradien Pecahan',
+                question: 'Perhatikan grafik garis di samping yang melalui (0, 2) dan (2, 3). Gradien garis tersebut adalah ...',
+                graph: { m: 0.5, c: 2 },
+                options: [
+                    '<span class="frac"><span>1</span><span>2</span></span>',
+                    '2',
+                    '−<span class="frac"><span>1</span><span>2</span></span>',
+                    '3'
+                ],
+                answer: 0,
+                explanation: 'Dari titik (0, 2) ke (2, 3), garis naik 1 satuan dan bergeser ke kanan 2 satuan, sehingga gradiennya adalah 1 per 2.'
+            },
+            {
+                category: 'Gradien Pecahan',
+                question: 'Manakah persamaan fungsi yang sesuai dengan grafik di samping?',
+                graph: { m: -0.5, c: 3 },
+                options: [
+                    'f(x) = −<span class="frac"><span>1</span><span>2</span></span>x + 3',
+                    'f(x) = <span class="frac"><span>1</span><span>2</span></span>x + 3',
+                    'f(x) = −2x + 3',
+                    'f(x) = 2x + 6'
+                ],
+                answer: 0,
+                explanation: 'Garis memotong sumbu-Y di (0, 3) dan sumbu-X di (6, 0). Arah garis turun ke kanan sejauh 3 satuan untuk setiap 6 satuan ke kanan, sehingga m = −1 per 2 dan c = 3.'
+            },
+            {
+                category: 'Aplikasi Kontekstual',
+                question: 'Tarif parkir mobil adalah Rp 5.000 untuk jam pertama dan bertambah Rp 2.000 tiap jam berikutnya. Jika lama parkir tambahan adalah x jam, model fungsinya adalah ...',
+                graph: null,
+                options: ['f(x) = 2.000x + 5.000', 'f(x) = 5.000x + 2.000', 'f(x) = 7.000x', 'f(x) = 5.000x − 2.000'],
+                answer: 0,
+                explanation: 'Biaya tetap awal adalah Rp 5.000 (konstanta c) dan pertambahan per jam adalah Rp 2.000 (gradien m), sehingga f(x) = 2.000x + 5.000.'
+            },
+            {
+                category: 'Titik pada Garis',
+                question: 'Agar titik (k, 7) terletak pada grafik fungsi f(x) = 2x + 1, maka nilai k harus sama dengan ...',
+                graph: null,
+                options: ['3', '4', '6', '15'],
+                answer: 0,
+                explanation: 'Substitusikan y = 7 dan x = k: 7 = 2k + 1 → 2k = 6 → k = 3.'
+            },
+            {
+                category: 'Membaca Grafik',
+                question: 'Perhatikan grafik fungsi linier di samping! Titik asal (0, 0) dilalui oleh garis karena ...',
+                graph: { m: 2, c: 0 },
+                options: [
+                    'Nilai konstanta c = 0',
+                    'Nilai gradien m = 0',
+                    'Garis sejajar sumbu-Y',
+                    'Nilai x selalu negatif'
+                ],
+                answer: 0,
+                explanation: 'Setiap fungsi linier berbentuk f(x) = mx (dengan c = 0) pasti melewati titik pusat koordinat (0, 0).'
+            },
+            {
+                category: 'Perbandingan Dua Garis',
+                question: 'Grafik f(x) = 2x + 1 dan g(x) = 2x + 5 digambar pada bidang Kartesius yang sama. Kedudukan kedua garis tersebut adalah ...',
+                graph: null,
+                options: [
+                    'Sejajar karena gradiennya sama (m = 2)',
+                    'Berpotongan tegak lurus',
+                    'Berimpit pada satu garis yang sama',
+                    'Berpotongan di titik (0, 2)'
+                ],
+                answer: 0,
+                explanation: 'Dua garis lurus yang memiliki nilai gradien m sama (sama-sama 2) tetapi konstanta c berbeda akan selalu sejajar.'
+            },
+            {
+                category: 'Menentukan Persamaan Grafik',
+                question: 'Grafik di samping memotong sumbu-Y di (0, −2) dan melalui titik (2, 4). Persamaan garis tersebut adalah ...',
+                graph: { m: 3, c: -2 },
+                options: ['f(x) = 3x − 2', 'f(x) = 2x − 2', 'f(x) = −3x − 2', 'f(x) = 3x + 2'],
+                answer: 0,
+                explanation: 'Dari (0, −2) diperoleh c = −2. Masukkan (2, 4): 4 = 2m − 2 → 2m = 6 → m = 3. Jadi f(x) = 3x − 2.'
+            },
+            {
+                category: 'Evaluasi Nilai Fungsi',
+                question: 'Jika f(x) = −2x + 9, maka nilai dari f(−3) adalah ...',
+                graph: null,
+                options: ['15', '3', '−15', '−3'],
+                answer: 0,
+                explanation: 'f(−3) = −2(−3) + 9 = 6 + 9 = 15.'
+            },
+            {
+                category: 'Membaca Grafik',
+                question: 'Berdasarkan grafik di samping, pasangan koordinat manakah yang TIDAK dilalui oleh garis?',
+                graph: { m: -1, c: 4 },
+                options: ['(0, 4)', '(2, 2)', '(4, 0)', '(1, 2)'],
+                answer: 3,
+                explanation: 'Persamaan grafik adalah f(x) = −x + 4. Untuk x = 1, seharusnya y = −1 + 4 = 3, bukan 2. Jadi (1, 2) tidak dilalui garis.'
+            },
+            {
+                category: 'Titik Potong Sumbu',
+                question: 'Garis dengan persamaan y = 3x + 6 memotong sumbu-X dan sumbu-Y berturut-turut di titik ...',
+                graph: { m: 3, c: 6 },
+                options: [
+                    '(−2, 0) dan (0, 6)',
+                    '(2, 0) dan (0, 6)',
+                    '(0, 6) dan (−2, 0)',
+                    '(6, 0) dan (0, −2)'
+                ],
+                answer: 0,
+                explanation: 'Potong sumbu-X (y = 0): 3x + 6 = 0 → x = −2, titik (−2, 0). Potong sumbu-Y (x = 0): y = 6, titik (0, 6).'
+            },
+            {
+                category: 'Aplikasi Kontekstual',
+                question: 'Sebuah tandon berisi 30 liter air dan dikuras dengan kecepatan 5 liter per menit. Volume air setelah t menit adalah V(t) = 30 − 5t. Pada menit ke berapa air habis?',
+                graph: null,
+                options: ['Menit ke-6', 'Menit ke-5', 'Menit ke-25', 'Menit ke-30'],
+                answer: 0,
+                explanation: 'Air habis saat V(t) = 0: 30 − 5t = 0 → 5t = 30 → t = 6 menit.'
+            },
+            {
+                category: 'Menentukan Persamaan Grafik',
+                question: 'Perhatikan grafik garis di samping! Persamaan fungsi liniernya adalah ...',
+                graph: { m: -2, c: -2 },
+                options: ['f(x) = −2x − 2', 'f(x) = 2x − 2', 'f(x) = −2x + 2', 'f(x) = −x − 2'],
+                answer: 0,
+                explanation: 'Garis memotong sumbu-Y di (0, −2) dan sumbu-X di (−1, 0), dengan kemiringan turun ke kanan m = −2. Persamaannya f(x) = −2x − 2.'
+            },
+            {
+                category: 'Konsep Gradien',
+                question: 'Di antara fungsi berikut, manakah yang grafiknya paling curam (kemiringan paling besar)?',
+                graph: null,
+                options: ['f(x) = 4x − 1', 'f(x) = 2x + 5', 'f(x) = x + 10', 'f(x) = 3x − 4'],
+                answer: 0,
+                explanation: 'Tingkat kecuraman garis ditentukan oleh besar mutlak gradien |m|. Nilai |4| = 4 adalah yang paling besar di antara pilihan.'
+            },
+            {
+                category: 'Membaca Grafik',
+                question: 'Pada grafik fungsi linier f(x) = x − 4 di samping, titik (4, 0) merupakan ...',
+                graph: { m: 1, c: -4 },
+                options: [
+                    'Titik potong dengan sumbu-X',
+                    'Titik potong dengan sumbu-Y',
+                    'Titik puncak grafik',
+                    'Titik pusat koordinat'
+                ],
+                answer: 0,
+                explanation: 'Titik (4, 0) memiliki ordinat y = 0 sehingga terletak tepat pada sumbu-X (titik potong sumbu-X).'
+            }
+        ];
+
+        let quizState = {
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            answered: false
+        };
+
+        function startNewQuiz() {
+            // Acak 10 soal dari 26 bank soal
+            const shuffled = [...quizQuestionBank].sort(() => Math.random() - 0.5);
+            quizState.questions = shuffled.slice(0, 10);
+            quizState.currentIndex = 0;
+            quizState.score = 0;
+            quizState.answered = false;
+
+            document.getElementById('quiz-result-screen').classList.add('hidden');
+            document.getElementById('quiz-active-container').classList.remove('hidden');
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            const q = quizState.questions[quizState.currentIndex];
+            quizState.answered = false;
+
+            document.getElementById('quiz-progress').textContent = `${quizState.currentIndex + 1} / ${quizState.questions.length}`;
+            document.getElementById('quiz-score').textContent = quizState.score;
+            document.getElementById('quiz-category-badge').textContent = q.category;
+            document.getElementById('quiz-question-text').innerHTML = q.question;
+
+            const canvasWrapper = document.getElementById('quiz-canvas-wrapper');
+            const questionWrapper = document.getElementById('quiz-question-wrapper');
+            if (q.graph) {
+                canvasWrapper.classList.remove('hidden');
+                questionWrapper.classList.remove('lg:col-span-12');
+                questionWrapper.classList.add('lg:col-span-7');
+            } else {
+                canvasWrapper.classList.add('hidden');
+                questionWrapper.classList.remove('lg:col-span-7');
+                questionWrapper.classList.add('lg:col-span-12');
+            }
+
+            const optionsGrid = document.getElementById('quiz-options-grid');
+            optionsGrid.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((optHtml, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `quiz-opt-${idx}`;
+                btn.onclick = () => selectQuizAnswer(idx);
+                btn.className = 'p-4 rounded-xl border-2 border-slate-300 bg-white hover:border-sky-500 hover:bg-sky-50 active:scale-98 text-left flex items-center gap-3.5 transition shadow-sm';
+                btn.innerHTML = `
+                    <span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 font-extrabold text-lg flex items-center justify-center shrink-0 border border-slate-300">${letters[idx]}</span>
+                    <span class="text-base sm:text-lg font-bold text-slate-900">${optHtml}</span>
+                `;
+                optionsGrid.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback-box').classList.add('hidden');
+            setTimeout(drawQuizCanvas, 20);
+        }
+
+        function selectQuizAnswer(selectedIdx) {
+            if (quizState.answered) return;
+            quizState.answered = true;
+
+            const q = quizState.questions[quizState.currentIndex];
+            const isCorrect = (selectedIdx === q.answer);
+            if (isCorrect) {
+                quizState.score += 10;
+                document.getElementById('quiz-score').textContent = quizState.score;
+            }
+
+            // Warnai tombol pilihan
+            q.options.forEach((_, idx) => {
+                const btn = document.getElementById(`quiz-opt-${idx}`);
+                btn.disabled = true;
+                btn.classList.remove('hover:border-sky-500', 'hover:bg-sky-50');
+                if (idx === q.answer) {
+                    btn.classList.remove('border-slate-300', 'bg-white');
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50', 'ring-2', 'ring-emerald-300');
+                } else if (idx === selectedIdx && !isCorrect) {
+                    btn.classList.remove('border-slate-300', 'bg-white');
+                    btn.classList.add('border-rose-500', 'bg-rose-50');
+                } else {
+                    btn.classList.add('opacity-55');
+                }
+            });
+
+            // Tampilkan pembahasan
+            const fbBox = document.getElementById('quiz-feedback-box');
+            const fbHeader = document.getElementById('quiz-feedback-header');
+            const fbExp = document.getElementById('quiz-explanation-text');
+            const nextBtnLabel = document.getElementById('btn-quiz-next-label');
+
+            fbBox.classList.remove('hidden', 'border-emerald-400', 'bg-emerald-50', 'border-rose-400', 'bg-rose-50');
+            if (isCorrect) {
+                fbBox.classList.add('border-emerald-400', 'bg-emerald-50');
+                fbHeader.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-2xl"></i> <span class="text-emerald-900">Jawaban Tepat! (+10 Poin)</span>';
+            } else {
+                fbBox.classList.add('border-rose-400', 'bg-rose-50');
+                fbHeader.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-2xl"></i> <span class="text-rose-900">Kurang Tepat — Mari Kita Bahas!</span>';
+            }
+
+            fbExp.innerHTML = `<strong>Pembahasan:</strong> ${q.explanation}`;
+            nextBtnLabel.textContent = (quizState.currentIndex < quizState.questions.length - 1) ? 'Soal Berikutnya' : 'Lihat Hasil Akhir Kuis';
+        }
+
+        function nextQuizQuestion() {
+            if (quizState.currentIndex < quizState.questions.length - 1) {
+                quizState.currentIndex++;
+                renderQuizQuestion();
+            } else {
+                document.getElementById('quiz-active-container').classList.add('hidden');
+                document.getElementById('quiz-result-screen').classList.remove('hidden');
+                document.getElementById('quiz-final-score').textContent = quizState.score;
+                document.getElementById('quiz-final-summary').textContent = `${quizState.score / 10} dari ${quizState.questions.length} soal terjawab benar`;
+            }
+        }
+
+        function drawQuizCanvas() {
+            const q = quizState.questions[quizState.currentIndex];
+            if (!q || !q.graph) return;
+            const canvas = document.getElementById('canvas-quiz');
+            const setup = setupHiDPICanvas(canvas);
+            if (!setup) return;
+            const { ctx, width, height } = setup;
+
+            const mapper = drawCartesianGrid(ctx, width, height, -7, 7, -7, 7, {
+                pad: 32,
+                xStep: 1,
+                yStep: 1
+            });
+
+            const { m, c } = q.graph;
+            drawClippedLine(ctx, mapper, m, c, -7, 7, -7, 7, '#0284c7', 4.5);
+
+            // Titik potong sumbu-Y
+            if (c >= -7 && c <= 7) {
+                drawPointMarker(ctx, mapper, 0, c, '#e11d48', 7.5, `(0, ${c})`);
+            }
+            // Titik potong sumbu-X jika bilangan bulat dalam rentang
+            if (Math.abs(m) > 1e-9) {
+                const xInt = -c / m;
+                if (Number.isInteger(xInt) && xInt >= -7 && xInt <= 7 && xInt !== 0) {
+                    drawPointMarker(ctx, mapper, xInt, 0, '#f59e0b', 7.5, `(${xInt}, 0)`);
+                }
+            }
+        }
+
+        /* =====================================================================
+           INISIALISASI SAAT HALAMAN DIMUAT & RESIZE LAYAR PID
+           ===================================================================== */
+        window.addEventListener('load', () => {
+            updateApersepsi();
+            updateLabUI();
+            updateStepUI();
+            startNewQuiz();
+        });
+
+        window.addEventListener('resize', () => {
+            if (currentTab === 1) updateApersepsi();
+            if (currentTab === 2) drawLabCanvas();
+            if (currentTab === 3) drawStepCanvas();
+            if (currentTab === 4) drawQuizCanvas();
+        });
+    </script>
+</body>
+</html>
